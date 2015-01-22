@@ -190,6 +190,7 @@ typedef struct rank rank;
 struct rank {
   float value;
   int index;
+  int scenario;
 };
 
 
@@ -229,22 +230,31 @@ int main(int argc, char **argv) {
   // Obliczenia!!!
 
   for (i=0; i<nScenarios; i++) {
-    for (j=0; j<nParams; j++) {
+	  if (i != 666)
+		  continue;
+//    for (j=0; j<nParams; j++) {
       for (k=0; k<nJobs; k++) {
         float tmpRank = 0.0;
+		printf("k:%d\n", k);
         for (l=k; l<k+realLen; l++) {
-          float diff = scenario_db[i][j][l] - real[j][l-k];
+			printf("l:%d\n", l);
+	      for (j=0; j<nParams; j++) {
+            float diff = scenario_db[i][j][l] - real[j][l-k];
           //printf("(%d,%d,%d)=%.2f\n", i, j, l, scenario_db[i][j][l]);
           //printf("real(%d,%d)=%.2f\n", j, l-k, real[j][l-k]);
-          tmpRank += abs(diff);
+            tmpRank += abs(diff);
+		  }
         }
-        tmpRank = tmpRank / realLen;
-        if (ranks[i].value < 0 || ranks[i].value < tmpRank) {
+        //tmpRank = tmpRank;
+		printf("tmprank: %f\n", tmpRank);
+        if (ranks[i].value < 0 || ranks[i].value > tmpRank) {
+		  printf("Setting value: %f, index: %d, to scenario: %d\n", tmpRank, l, i);
           ranks[i].value = tmpRank;
           ranks[i].index = l;
+          ranks[i].scenario = i;
         }
       }
-    }
+//    }
   }
 
   qsort((void *)ranks, nScenarios, sizeof(rank), compare_ranks);
@@ -255,7 +265,7 @@ int main(int argc, char **argv) {
   FILE *f = fopen(file, "w");
 
   for (i=0; i<nScenarios; i++) {
-    fprintf(f, "%d %.2f %d\n", i, ranks[i].value, ranks[i].index);
+    fprintf(f, "%d %.2f %d\n", ranks[i].scenario, ranks[i].value, ranks[i].index);
   }
   fclose(f);
 }
