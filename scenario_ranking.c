@@ -24,6 +24,7 @@
 
 
 const char *data_dir = "./data";
+const char *work_dir = "./work";
 
 int nScenarios = 0,
     nSteps = 0,
@@ -140,7 +141,7 @@ int read_scenarios(float ***db) {
 int read_sample(float **real) {
   char file[100];
 
-  sprintf(file, "%s/%s", data_dir, "sample.csv");
+  sprintf(file, "%s/%s", work_dir, "sample.csv");
   FILE *f = fopen(file, "r");
 
   // first count lines to determine the scenario length!
@@ -250,7 +251,7 @@ int main(int argc, char **argv) {
 
   // write output file
   char file[100];
-  sprintf(file, "%s/%s", data_dir, "output.txt");
+  sprintf(file, "%s/%s", work_dir, "output.txt");
   FILE *f = fopen(file, "w");
 
   for (i=0; i<nScenarios; i++) {
