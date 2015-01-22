@@ -9,11 +9,11 @@
 /* 
 ** Scenario identification for flood decision support
 **
-** 1. Reads all files from 'data_dir'
+** 1. Reads all files from directory pointed by fist argument
 **    - Files 'scenario*.csv' contain scenarios data
 **    - File  'sample.csv' contains 'real' time series to compare with
 ** 2. Computes the scenario ranking
-** 3. Writes output to file 'data_dir/output.txt'
+** 3. Writes output to file argv[2]'/output.txt'
 **
 ** Limitations:
 ** - Assumes the same number of lines in each 'scenario*.csv'
@@ -23,8 +23,10 @@
 */
 
 
-const char *data_dir = "./data";
-const char *work_dir = "./work";
+//const char *data_dir = "./data";
+//const char *work_dir = "./work";
+char data_dir[100];
+char work_dir[100];
 
 int nScenarios = 0,
     nSteps = 0,
@@ -214,6 +216,9 @@ rank *ranks;
 
 int main(int argc, char **argv) {
   int i, j, k, l, nf;
+
+  sprintf(data_dir, "%s", argv[1]);
+  sprintf(work_dir, "%s", argv[2]);
 
   nScenarios = read_scenarios(scenario_db);
   realLen = read_sample(real);
