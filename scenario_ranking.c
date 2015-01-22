@@ -94,8 +94,10 @@ int read_scenarios(float ***db) {
   for (scenario_id=0; scenario_id<nScenarios; ++scenario_id) {
     //int nParams = 0, nSteps = 0;
     char file[100];
-    sprintf(file, "%s/%s", data_dir, scenario_filenames[scenario_id]);
+    //sprintf(file, "%s/%s", data_dir, scenario_filenames[scenario_id]);
+    sprintf(file, "%s/scenario%d.csv", data_dir, scenario_id+1);
     FILE *f = fopen(file, "r");
+	//printf("filename: %s, id: %d\n", file, scenario_id);
 
     // first count lines to determine the scenario length!
     // wasteful because of the file format...
@@ -230,27 +232,24 @@ int main(int argc, char **argv) {
   // Obliczenia!!!
 
   for (i=0; i<nScenarios; i++) {
-	  if (i != 666)
-		  continue;
 //    for (j=0; j<nParams; j++) {
       for (k=0; k<nJobs; k++) {
         float tmpRank = 0.0;
-		printf("k:%d\n", k);
+		//printf("k:%d\n", k);
         for (l=k; l<k+realLen; l++) {
-			printf("l:%d\n", l);
+		  //printf("l:%d\n", l);
 	      for (j=0; j<nParams; j++) {
             float diff = scenario_db[i][j][l] - real[j][l-k];
-          //printf("(%d,%d,%d)=%.2f\n", i, j, l, scenario_db[i][j][l]);
-          //printf("real(%d,%d)=%.2f\n", j, l-k, real[j][l-k]);
-            tmpRank += abs(diff);
+          //printf("(%d,%d,%d)=%.9f\t", i, j, l, scenario_db[i][j][l]);
+          //printf("real(%d,%d)=%.9f\n", j, l-k, real[j][l-k]);
+            tmpRank += fabsf(diff);
 		  }
         }
-        //tmpRank = tmpRank;
-		printf("tmprank: %f\n", tmpRank);
+		//printf("Value: %f, index: %d, to scenario: %d\n", tmpRank, k, i);
         if (ranks[i].value < 0 || ranks[i].value > tmpRank) {
-		  printf("Setting value: %f, index: %d, to scenario: %d\n", tmpRank, l, i);
+		  //printf("Setting value!\n");
           ranks[i].value = tmpRank;
-          ranks[i].index = l;
+          ranks[i].index = k;
           ranks[i].scenario = i;
         }
       }
@@ -265,7 +264,7 @@ int main(int argc, char **argv) {
   FILE *f = fopen(file, "w");
 
   for (i=0; i<nScenarios; i++) {
-    fprintf(f, "%d %.2f %d\n", ranks[i].scenario, ranks[i].value, ranks[i].index);
+    fprintf(f, "%d %.4f %d\n", ranks[i].scenario, ranks[i].value, ranks[i].index);
   }
   fclose(f);
 }
