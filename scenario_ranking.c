@@ -239,7 +239,7 @@ int main(int argc, char **argv) {
           tmpRank += abs(diff);
         }
         tmpRank = tmpRank / realLen;
-        if (ranks[i].value < 0 || ranks[i].value > tmpRank) {
+        if (ranks[i].value < 0 || ranks[i].value < tmpRank) {
           ranks[i].value = tmpRank;
           ranks[i].index = l;
         }
