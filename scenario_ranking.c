@@ -88,8 +88,8 @@ int read_scenarios(float ***db) {
     closedir (dir);
   } else {
     /* could not open directory */
-    perror ("");
-    return EXIT_FAILURE;
+    perror (data_dir);
+    exit(EXIT_FAILURE);
   }
 
   int scenario_id, param_id, nf;
@@ -99,7 +99,11 @@ int read_scenarios(float ***db) {
     //sprintf(file, "%s/%s", data_dir, scenario_filenames[scenario_id]);
     sprintf(file, "%s/scenario%d.csv", data_dir, scenario_id+1);
     FILE *f = fopen(file, "r");
-	//printf("filename: %s, id: %d\n", file, scenario_id);
+    if (f == NULL) {
+      perror(file);
+      exit(EXIT_FAILURE);
+    }
+    //printf("filename: %s, id: %d\n", file, scenario_id);
 
     // first count lines to determine the scenario length!
     // wasteful because of the file format...
@@ -146,7 +150,12 @@ int read_sample(float **real) {
   char file[100];
 
   sprintf(file, "%s/%s", work_dir, "sample.csv");
+  
   FILE *f = fopen(file, "r");
+  if (f == NULL) {
+    perror(file);
+    exit(EXIT_FAILURE);
+  }
 
   // first count lines to determine the scenario length!
   // wasteful because of the file format...
@@ -176,12 +185,6 @@ int read_sample(float **real) {
       //printf("field[%d] = %.2f\n", param_id, field[param_id]);
     }
   }
-  /*
-     int j;
-     for (i=0; i<nParams; ++i) 
-     for (j=0; j<realLen; ++j)
-     printf("sample[%d][%d]=%.2f\n", i, j, real[i][j]);
-   */
 
   fclose(f);
   return realLen;
@@ -217,6 +220,13 @@ rank *ranks;
 int main(int argc, char **argv) {
   int i, j, k, l, nf;
 
+  if (argc != 3) {
+    printf("\n  Usage: scenario_ranking <data_dir> <work_dir>\n\n");
+    exit(EXIT_FAILURE);
+  }
+
+
+
   sprintf(data_dir, "%s", argv[1]);
   sprintf(work_dir, "%s", argv[2]);
 
@@ -237,28 +247,27 @@ int main(int argc, char **argv) {
   // Obliczenia!!!
 
   for (i=0; i<nScenarios; i++) {
-//    for (j=0; j<nParams; j++) {
-      for (k=0; k<nJobs; k++) {
-        float tmpRank = 0.0;
-		//printf("k:%d\n", k);
-        for (l=k; l<k+realLen; l++) {
-		  //printf("l:%d\n", l);
-	      for (j=0; j<nParams; j++) {
-            float diff = scenario_db[i][j][l] - real[j][l-k];
+    for (k=0; k<nJobs; k++) {
+      float tmpRank = 0.0;
+      //printf("k:%d\n", k);
+      for (l=k; l<k+realLen; l++) {
+        //printf("l:%d\n", l);
+        for (j=0; j<nParams; j++) {
+          float diff = scenario_db[i][j][l] - real[j][l-k];
           //printf("(%d,%d,%d)=%.9f\t", i, j, l, scenario_db[i][j][l]);
           //printf("real(%d,%d)=%.9f\n", j, l-k, real[j][l-k]);
-            tmpRank += fabsf(diff);
-		  }
-        }
-		//printf("Value: %f, index: %d, to scenario: %d\n", tmpRank, k, i);
-        if (ranks[i].value < 0 || ranks[i].value > tmpRank) {
-		  //printf("Setting value!\n");
-          ranks[i].value = tmpRank;
-          ranks[i].index = k;
-          ranks[i].scenario = i;
+          tmpRank += fabsf(diff);
         }
       }
-//    }
+      //printf("Value: %f, index: %d, to scenario: %d\n", tmpRank, k, i);
+      if (ranks[i].value < 0 || ranks[i].value > tmpRank) {
+        //printf("Setting value!\n");
+        ranks[i].value = tmpRank;
+        ranks[i].index = k;
+        ranks[i].scenario = i;
+      }
+    }
+    //    }
   }
 
   qsort((void *)ranks, nScenarios, sizeof(rank), compare_ranks);
@@ -267,6 +276,10 @@ int main(int argc, char **argv) {
   char file[100];
   sprintf(file, "%s/%s", work_dir, "output.txt");
   FILE *f = fopen(file, "w");
+  if (f == NULL) {
+    perror(file);
+    exit(EXIT_FAILURE);
+  }
 
   for (i=0; i<nScenarios; i++) {
     fprintf(f, "%d %.4f %d\n", ranks[i].scenario, ranks[i].value, ranks[i].index);
